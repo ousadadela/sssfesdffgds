@@ -17,14 +17,21 @@ def handle_photo(message):
     image = Image.open(BytesIO(downloaded_file)).convert("RGBA")
     watermark = Image.open(WATERMARK_PATH).convert("RGBA")
 
-    # Redimensiona marca d’água pra 20% do tamanho da imagem
-    scale = image.width // 5
-    ratio = watermark.width / watermark.height
-    watermark = watermark.resize((scale, int(scale / ratio)))
+# Redimensiona a marca d’água para ocupar toda a largura da imagem
+watermark_ratio = watermark.width / watermark.height
+new_width = image.width
+new_height = int(new_width / watermark_ratio)
 
-    # Posiciona no canto inferior direito
-    position = (image.width - watermark.width - 20, image.height - watermark.height - 20)
-    image.alpha_composite(watermark, position)
+# Redimensiona proporcionalmente
+watermark = watermark.resize((new_width, new_height))
+
+# Calcula a posição: centralizada horizontalmente, colada na parte de baixo
+x = 0
+y = image.height - new_height  # parte inferior
+position = (x, y)
+
+# Aplica a marca d'água
+image.alpha_composite(watermark, position)
 
     output = BytesIO()
     output.name = "watermarked.png"
@@ -38,3 +45,4 @@ def send_welcome(message):
     bot.reply_to(message, "Envie uma imagem que eu aplico a marca d’água pra você 💧")
 
 bot.infinity_polling()
+
